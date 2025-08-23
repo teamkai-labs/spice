@@ -34,7 +34,12 @@ abstract class Saga {
     /**
      * Steps that have been executed
      */
-    protected val executedSteps = mutableListOf<SagaStep>()
+    protected val _executedSteps = mutableListOf<SagaStep>()
+    
+    /**
+     * Public read-only view of executed steps
+     */
+    val executedSteps: List<SagaStep> get() = _executedSteps.toList()
     
     /**
      * Error that caused the saga to fail
@@ -82,7 +87,7 @@ abstract class Saga {
      * Compensate for executed steps in reverse order
      */
     protected open suspend fun compensate(context: SagaContext) {
-        executedSteps.asReversed().forEach { step ->
+        _executedSteps.asReversed().forEach { step ->
             try {
                 logger.info("Compensating step: ${step.name}")
                 step.compensate(context)
@@ -102,7 +107,7 @@ abstract class Saga {
     ) {
         logger.info("Executing step: ${step.name}")
         step.execute(context)
-        executedSteps.add(step)
+        _executedSteps.add(step)
     }
 }
 
